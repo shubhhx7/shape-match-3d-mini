@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import HomeScreen from './components/HomeScreen';
-import InstructionOverlay from './components/InstructionOverlay';
 import GameScreen from './components/GameScreen';
 import ResultScreen from './components/ResultScreen';
 import { generateRounds } from './data/shapes';
@@ -20,11 +19,6 @@ export default function App() {
     setRounds(generateRounds());
     setCurrentRound(0);
     setScore(0);
-    setGameState('instructions');
-  }, [sound]);
-
-  const startPlaying = useCallback(() => {
-    sound.playClick();
     setGameState('playing');
   }, [sound]);
 
@@ -53,7 +47,7 @@ export default function App() {
     setRounds(generateRounds());
     setCurrentRound(0);
     setScore(0);
-    setGameState('instructions');
+    setGameState('playing');
   }, [sound]);
 
   const handleHome = useCallback(() => {
@@ -74,10 +68,7 @@ export default function App() {
           onToggleSound={toggleSound}
         />
       )}
-      {gameState === 'instructions' && (
-        <InstructionOverlay onStart={startPlaying} />
-      )}
-      {gameState === 'playing' && rounds.length > 0 && (
+{gameState === 'playing' && rounds.length > 0 && (
         <GameScreen
           round={rounds[currentRound]}
           roundNumber={currentRound + 1}

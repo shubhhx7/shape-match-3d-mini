@@ -1,8 +1,5 @@
 import { useMemo, useState } from 'react';
-import Confetti from './Confetti';
 import SoundToggle from './SoundToggle';
-
-const STARS = ['⭐', '⭐', '⭐'];
 
 function StarBadge({ index, total }) {
   const lit = index < total;
@@ -12,8 +9,10 @@ function StarBadge({ index, total }) {
       style={{
         animationDelay: `${index * 0.18}s`,
         opacity: 0,
-        fontSize: lit ? 'clamp(2.5rem, 9vw, 4rem)' : 'clamp(1.8rem, 6vw, 2.8rem)',
-        filter: lit ? 'none' : 'grayscale(1) opacity(0.35)',
+        fontSize: lit ? 'clamp(2.4rem, 8vw, 3.6rem)' : 'clamp(1.8rem, 6vw, 2.6rem)',
+        filter: lit
+          ? 'drop-shadow(0 2px 10px rgba(255,210,0,0.65))'
+          : 'grayscale(1) opacity(0.3)',
         transform: lit ? 'none' : 'scale(0.8)',
         display: 'inline-block',
       }}
@@ -23,7 +22,6 @@ function StarBadge({ index, total }) {
   );
 }
 
-/* Stable confetti pieces */
 const CONFETTI_COLORS = ['#FF6B6B','#FFE66D','#4ECDC4','#45B7D1','#96CEB4','#DDA0DD','#FF69B4','#FFA500'];
 function ResultConfetti({ score }) {
   const pieces = useMemo(() =>
@@ -64,19 +62,19 @@ function ResultConfetti({ score }) {
 }
 
 const MESSAGES = {
-  5: { title: 'PERFECT! 🏆', sub: 'You matched all 5 shapes! Amazing!' },
-  4: { title: 'SO CLOSE! 🌟', sub: 'You got 4 out of 5 — wow!' },
-  3: { title: 'GREAT JOB! 🎉', sub: 'You matched 3 shapes!' },
-  2: { title: 'NICE TRY! 💪', sub: 'Let\'s practice more!' },
-  1: { title: 'KEEP GOING! 🌈', sub: 'You\'ll get them next time!' },
-  0: { title: 'LET\'S TRY AGAIN! 🚀', sub: 'Practice makes perfect!' },
+  5: { title: 'PERFECT!',    sub: 'You matched all 5 shapes! Amazing!' },
+  4: { title: 'SO CLOSE!',   sub: 'You got 4 out of 5 — wow!' },
+  3: { title: 'GREAT JOB!',  sub: 'You matched 3 shapes!' },
+  2: { title: 'NICE TRY!',   sub: "Let's practice more!" },
+  1: { title: 'KEEP GOING!', sub: "You'll get them next time!" },
+  0: { title: 'TRY AGAIN!',  sub: 'Practice makes perfect!' },
 };
 
 export default function ResultScreen({ score, totalRounds, onPlayAgain, onHome, soundEnabled, onToggleSound }) {
   const [pressedBtn, setPressedBtn] = useState(null);
-  const msg = MESSAGES[Math.max(0, Math.min(5, score))] || MESSAGES[0];
-
+  const msg   = MESSAGES[Math.max(0, Math.min(5, score))] || MESSAGES[0];
   const stars = Math.round((score / totalRounds) * 3);
+  const icon  = score === 5 ? '🏆' : score >= 3 ? '🎉' : '🌈';
 
   function btnPress(id, fn) {
     setPressedBtn(id);
@@ -84,23 +82,44 @@ export default function ResultScreen({ score, totalRounds, onPlayAgain, onHome, 
   }
 
   return (
-    <div
-      style={{
-        position: 'fixed',
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      padding: 'clamp(16px, 4vw, 32px)',
+    }}>
+
+      {/* ── Background: 3.png covers the full viewport ── */}
+      <img
+        src="/3.png"
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          objectPosition: 'center center',
+          display: 'block',
+          pointerEvents: 'none',
+          userSelect: 'none',
+        }}
+      />
+
+      {/* Very light overlay — keeps the scene bright & celebratory */}
+      <div style={{
+        position: 'absolute',
         inset: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-        background: `
-          linear-gradient(160deg, rgba(20,5,65,0.55) 0%, rgba(60,20,110,0.35) 40%, rgba(15,0,55,0.75) 80%, rgba(5,0,35,0.9) 100%),
-          url('/2.png') center/cover no-repeat,
-          linear-gradient(160deg, #4f46e5 0%, #7c3aed 30%, #db2777 70%, #f59e0b 100%)
-        `,
-        padding: '20px',
-      }}
-    >
+        background: 'linear-gradient(160deg, rgba(60,10,120,0.22) 0%, rgba(10,40,120,0.14) 55%, rgba(50,5,90,0.26) 100%)',
+        pointerEvents: 'none',
+      }} />
+
       <ResultConfetti score={score} />
 
       {/* Sound toggle */}
@@ -108,35 +127,33 @@ export default function ResultScreen({ score, totalRounds, onPlayAgain, onHome, 
         <SoundToggle enabled={soundEnabled} onToggle={onToggleSound} />
       </div>
 
-      {/* Main card */}
+      {/* ── Result card ─────────────────────────────────────────────── */}
       <div
         className="anim-popIn"
         style={{
           position: 'relative',
           zIndex: 5,
+          width: 'min(92vw, 820px)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 'clamp(14px, 3.5vw, 22px)',
-          padding: 'clamp(24px, 5vw, 44px) clamp(24px, 6vw, 52px)',
-          background: 'rgba(255,255,255,0.2)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderRadius: '32px',
-          border: '3px solid rgba(255,255,255,0.45)',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.35)',
-          maxWidth: '420px',
-          width: '100%',
+          gap: 'clamp(12px, 2.6vh, 20px)',
+          padding: 'clamp(22px, 4vw, 42px) clamp(24px, 5vw, 52px)',
+          background: 'rgba(255,255,255,0.13)',
+          backdropFilter: 'blur(7px)',
+          WebkitBackdropFilter: 'blur(7px)',
+          borderRadius: '28px',
+          boxShadow: '0 12px 40px rgba(0,0,0,0.18)',
           textAlign: 'center',
         }}
       >
-        {/* Trophy / celebration emoji */}
+        {/* Trophy / celebration icon */}
         <div style={{
-          fontSize: 'clamp(3.5rem, 12vw, 5.5rem)',
+          fontSize: 'clamp(3rem, 10vw, 4.8rem)',
           lineHeight: 1,
-          filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.3))',
+          filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))',
         }}>
-          {score === 5 ? '🏆' : score >= 3 ? '🎉' : '🌈'}
+          {icon}
         </div>
 
         {/* Title */}
@@ -144,11 +161,12 @@ export default function ResultScreen({ score, totalRounds, onPlayAgain, onHome, 
           className="anim-fadeInUp"
           style={{
             margin: 0,
-            fontSize: 'clamp(1.6rem, 7vw, 2.6rem)',
+            fontSize: 'clamp(1.8rem, 7vw, 3rem)',
             fontWeight: 900,
             color: 'white',
-            textShadow: '0 4px 16px rgba(0,0,0,0.3)',
-            lineHeight: 1.15,
+            textShadow: '0 3px 18px rgba(0,0,0,0.55)',
+            lineHeight: 1.1,
+            letterSpacing: '1px',
           }}
         >
           {msg.title}
@@ -157,27 +175,25 @@ export default function ResultScreen({ score, totalRounds, onPlayAgain, onHome, 
         {/* Subtitle */}
         <p style={{
           margin: 0,
-          fontSize: 'clamp(0.95rem, 3vw, 1.2rem)',
-          fontWeight: 800,
-          color: 'rgba(255,255,255,0.95)',
-          textShadow: '0 2px 8px rgba(0,0,0,0.25)',
+          fontSize: 'clamp(0.88rem, 2.8vw, 1.15rem)',
+          fontWeight: 700,
+          color: 'rgba(255,255,255,0.93)',
+          textShadow: '0 2px 10px rgba(0,0,0,0.45)',
+          lineHeight: 1.4,
         }}>
           {msg.sub}
         </p>
 
         {/* Stars */}
-        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-          {[0, 1, 2].map(i => (
-            <StarBadge key={i} index={i} total={stars} />
-          ))}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(8px, 3vw, 18px)' }}>
+          {[0, 1, 2].map(i => <StarBadge key={i} index={i} total={stars} />)}
         </div>
 
-        {/* Score badge */}
+        {/* Score pill */}
         <div style={{
-          background: 'rgba(255,255,255,0.28)',
-          border: '3px solid rgba(255,255,255,0.55)',
+          background: 'rgba(255,255,255,0.14)',
           borderRadius: '50px',
-          padding: '10px 28px',
+          padding: 'clamp(8px, 1.8vw, 13px) clamp(20px, 4vw, 34px)',
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
@@ -186,15 +202,15 @@ export default function ResultScreen({ score, totalRounds, onPlayAgain, onHome, 
             fontSize: 'clamp(1.2rem, 4.5vw, 1.8rem)',
             fontWeight: 900,
             color: '#fde68a',
-            textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            textShadow: '0 2px 10px rgba(0,0,0,0.45)',
           }}>
             {score}
           </span>
           <span style={{
-            fontSize: 'clamp(0.9rem, 3vw, 1.2rem)',
+            fontSize: 'clamp(0.88rem, 2.6vw, 1.1rem)',
             fontWeight: 800,
-            color: 'white',
-            textShadow: '0 2px 6px rgba(0,0,0,0.25)',
+            color: 'rgba(255,255,255,0.9)',
+            textShadow: '0 2px 8px rgba(0,0,0,0.35)',
           }}>
             / {totalRounds} matched
           </span>
@@ -203,57 +219,71 @@ export default function ResultScreen({ score, totalRounds, onPlayAgain, onHome, 
         {/* Buttons */}
         <div style={{
           display: 'flex',
-          gap: 'clamp(10px, 3vw, 16px)',
-          width: '100%',
+          gap: 'clamp(10px, 3vw, 18px)',
           flexWrap: 'wrap',
           justifyContent: 'center',
+          width: '100%',
         }}>
           <button
             aria-label="Play again"
             onClick={() => btnPress('again', onPlayAgain)}
             style={{
               flex: '1 1 140px',
-              padding: 'clamp(12px, 3vw, 18px) 20px',
-              fontSize: 'clamp(1rem, 3.2vw, 1.25rem)',
+              maxWidth: '260px',
+              padding: 'clamp(12px, 2.8vw, 18px) clamp(20px, 4vw, 36px)',
+              fontSize: 'clamp(0.95rem, 3vw, 1.15rem)',
               fontWeight: 900,
               color: 'white',
               background: pressedBtn === 'again'
-                ? 'linear-gradient(135deg, #7c3aed, #db2777)'
+                ? 'linear-gradient(135deg, #6d28d9, #be185d)'
                 : 'linear-gradient(135deg, #8b5cf6, #ec4899)',
-              border: '3px solid rgba(255,255,255,0.55)',
+              border: 'none',
               borderRadius: '50px',
               cursor: 'pointer',
               transform: pressedBtn === 'again' ? 'scale(0.93)' : 'scale(1)',
               transition: 'transform 0.12s, background 0.12s',
-              boxShadow: '0 8px 24px rgba(139,92,246,0.4)',
+              boxShadow: '0 8px 26px rgba(139,92,246,0.5)',
               textShadow: '0 2px 6px rgba(0,0,0,0.2)',
+              whiteSpace: 'nowrap',
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
             }}
+            onPointerDown={e => { e.currentTarget.style.transform = 'scale(0.93)'; }}
+            onPointerUp={e =>   { e.currentTarget.style.transform = 'scale(1)'; }}
+            onPointerLeave={e =>{ e.currentTarget.style.transform = 'scale(1)'; }}
           >
-            🔄 Play Again!
+            Play Again
           </button>
 
           <button
             aria-label="Go to home screen"
             onClick={() => btnPress('home', onHome)}
             style={{
-              flex: '1 1 120px',
-              padding: 'clamp(12px, 3vw, 18px) 20px',
-              fontSize: 'clamp(1rem, 3.2vw, 1.25rem)',
+              flex: '1 1 110px',
+              maxWidth: '200px',
+              padding: 'clamp(12px, 2.8vw, 18px) clamp(20px, 4vw, 36px)',
+              fontSize: 'clamp(0.95rem, 3vw, 1.15rem)',
               fontWeight: 900,
               color: 'white',
               background: pressedBtn === 'home'
-                ? 'rgba(255,255,255,0.3)'
-                : 'rgba(255,255,255,0.2)',
-              border: '3px solid rgba(255,255,255,0.55)',
+                ? 'rgba(255,255,255,0.26)'
+                : 'rgba(255,255,255,0.16)',
+              border: 'none',
               borderRadius: '50px',
               cursor: 'pointer',
               transform: pressedBtn === 'home' ? 'scale(0.93)' : 'scale(1)',
               transition: 'transform 0.12s, background 0.12s',
-              boxShadow: '0 6px 18px rgba(0,0,0,0.2)',
-              textShadow: '0 2px 6px rgba(0,0,0,0.2)',
+              boxShadow: '0 6px 18px rgba(0,0,0,0.18)',
+              textShadow: '0 2px 8px rgba(0,0,0,0.35)',
+              whiteSpace: 'nowrap',
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
             }}
+            onPointerDown={e => { e.currentTarget.style.transform = 'scale(0.93)'; }}
+            onPointerUp={e =>   { e.currentTarget.style.transform = 'scale(1)'; }}
+            onPointerLeave={e =>{ e.currentTarget.style.transform = 'scale(1)'; }}
           >
-            🏠 Home
+            Home
           </button>
         </div>
       </div>
